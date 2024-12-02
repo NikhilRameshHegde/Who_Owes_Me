@@ -36,7 +36,8 @@
             border-radius: 16px;
         }
 
-        .form-container, .search-container {
+        .form-container,
+        .search-container {
             margin-bottom: 20px;
             display: flex;
             gap: 12px;
@@ -80,8 +81,10 @@
         }
 
         /* Desktop Table Styles */
+        /* Updated Desktop Table Styles */
         .desktop-view {
             display: block;
+            overflow-x: auto;
         }
 
         table {
@@ -90,25 +93,30 @@
             border-spacing: 0;
             margin: 20px 0;
             background: white;
+            table-layout: fixed;
         }
 
-        table th, table td {
-            text-align: left;
+        table th,
+        table td {
+            text-align: center;
             padding: 12px;
             border-bottom: 1px solid #eee;
         }
 
-        table th {
-            background: #ff6b6b;
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 14px;
+        /* Set specific column widths */
+        table th:nth-child(1),
+        table td:nth-child(1) {
+            width: 40%;
         }
 
-        table td {
-            font-size: 15px;
-            vertical-align: middle;
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            width: 30%;
+        }
+
+        table th:nth-child(3),
+        table td:nth-child(3) {
+            width: 30%;
         }
 
         table td input {
@@ -116,6 +124,16 @@
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* Center align the action buttons */
+        table td:last-child {
+            text-align: center;
+        }
+
+        table td:last-child button {
+            margin: 0 4px;
         }
 
         /* Mobile Card Styles */
@@ -186,12 +204,14 @@
                 padding: 1rem;
             }
 
-            .form-container, .search-container {
+            .form-container,
+            .search-container {
                 flex-direction: column;
                 gap: 10px;
             }
 
-            input, button {
+            input,
+            button {
                 width: 100%;
                 margin: 0;
             }
@@ -260,7 +280,7 @@
 
         function loadDataFromLocalStorage() {
             const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-            
+
             // Update table view
             const tableBody = document.querySelector("#moneyTable tbody");
             tableBody.innerHTML = "";
@@ -330,7 +350,7 @@
             } else {
                 const newName = inputs[0].value;
                 const newAmount = inputs[1].value;
-                
+
                 data[index] = { name: newName, amount: newAmount };
                 saveDataToLocalStorage(data);
                 loadDataFromLocalStorage();
