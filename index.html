@@ -142,32 +142,48 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><span>Vade</span><input type="text" value="Vade"></td>
-                    <td><span>1000</span><input type="number" value="1000"></td>
-                    <td>
-                        <button onclick="toggleEdit(this)">Edit</button>
-                        <button onclick="deleteRow(this)">Remove</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span>Vinay</span><input type="text" value="Vinay"></td>
-                    <td><span>11377</span><input type="number" value="11377"></td>
-                    <td>
-                        <button onclick="toggleEdit(this)">Edit</button>
-                        <button onclick="deleteRow(this)">Remove</button>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
     <footer>
         Copyright © 2024 Who Owes Me?<br>
-        <br>
         By Nikhil Ramesh Hegde<br>
         All rights reserved.
     </footer>
     <script>
+        // Function to save table data to LocalStorage
+        function saveToLocalStorage() {
+            const tableRows = document.querySelectorAll("#moneyTable tbody tr");
+            const data = [];
+
+            tableRows.forEach(row => {
+                const name = row.querySelector("td span").textContent;
+                const amount = row.querySelector("td span:nth-child(2)").textContent;
+                data.push({ name, amount });
+            });
+
+            localStorage.setItem("moneyTrackerData", JSON.stringify(data));
+        }
+
+        // Function to load data from LocalStorage
+        function loadFromLocalStorage() {
+            const savedData = JSON.parse(localStorage.getItem("moneyTrackerData") || "[]");
+
+            savedData.forEach(entry => {
+                const table = document.querySelector("#moneyTable tbody");
+                const newRow = table.insertRow();
+
+                newRow.innerHTML = `
+                    <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
+                    <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
+                    <td>
+                        <button onclick="toggleEdit(this)">Edit</button>
+                        <button onclick="deleteRow(this)">Remove</button>
+                    </td>
+                `;
+            });
+        }
+
         // Function to add a row
         function addRow() {
             const name = document.getElementById('name').value.trim();
@@ -178,28 +194,29 @@
                 return;
             }
 
-            const table = document.getElementById('moneyTable').getElementsByTagName('tbody')[0];
+            const table = document.querySelector("#moneyTable tbody");
             const newRow = table.insertRow();
 
-            const nameCell = newRow.insertCell(0);
-            const amountCell = newRow.insertCell(1);
-            const actionCell = newRow.insertCell(2);
-
-            nameCell.innerHTML = `<span>${name}</span><input type="text" value="${name}">`;
-            amountCell.innerHTML = `<span>${amount}</span><input type="number" value="${amount}">`;
-            actionCell.innerHTML = `
-                <button onclick="toggleEdit(this)">Edit</button>
-                <button onclick="deleteRow(this)">Remove</button>
+            newRow.innerHTML = `
+                <td><span>${name}</span><input type="text" value="${name}"></td>
+                <td><span>${amount}</span><input type="number" value="${amount}"></td>
+                <td>
+                    <button onclick="toggleEdit(this)">Edit</button>
+                    <button onclick="deleteRow(this)">Remove</button>
+                </td>
             `;
 
             document.getElementById('name').value = '';
             document.getElementById('amount').value = '';
+
+            saveToLocalStorage();
         }
 
         // Function to delete a row
         function deleteRow(button) {
             const row = button.parentElement.parentElement;
             row.remove();
+            saveToLocalStorage();
         }
 
         // Function to toggle edit mode
@@ -219,6 +236,7 @@
                 });
                 inputs.forEach(input => input.style.display = "none");
                 button.textContent = "Edit";
+                saveToLocalStorage();
             }
         }
 
@@ -232,6 +250,9 @@
                 row.style.display = name.includes(query) ? "" : "none";
             });
         }
+
+        // Load data from LocalStorage on page load
+        window.onload = loadFromLocalStorage;
     </script>
 </body>
 </html>
