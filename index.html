@@ -28,22 +28,22 @@
         }
 
         .container {
-            padding: 25px;
+            padding: 20px;
             max-width: 1000px;
-            margin: 30px auto;
+            margin: 20px auto;
             background: white;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
             border-radius: 16px;
         }
 
         .form-container, .search-container {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: flex;
             gap: 12px;
             align-items: center;
         }
 
-        .form-container input, .search-container input {
+        input {
             padding: 12px 16px;
             border: 2px solid #e1e1e1;
             border-radius: 10px;
@@ -52,9 +52,11 @@
             font-size: 15px;
             flex: 1;
             transition: all 0.3s ease;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
-        .form-container input:focus, .search-container input:focus {
+        input:focus {
             border-color: #ff6b6b;
             outline: none;
             box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
@@ -70,13 +72,17 @@
             font-size: 15px;
             font-weight: 500;
             transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
+            white-space: nowrap;
         }
 
         button:hover {
             background: #ff5252;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 0 -20px;
+            padding: 0 20px;
         }
 
         table {
@@ -85,14 +91,14 @@
             border-spacing: 0;
             margin: 20px 0;
             background: white;
-            border-radius: 12px;
-            overflow: hidden;
+            min-width: 600px; /* Minimum width to prevent squishing */
         }
 
         table th, table td {
             text-align: left;
-            padding: 16px;
+            padding: 12px;
             border-bottom: 1px solid #eee;
+            word-break: break-word;
         }
 
         table th {
@@ -101,7 +107,7 @@
             font-weight: 600;
             text-transform: uppercase;
             font-size: 14px;
-            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         table td {
@@ -109,63 +115,42 @@
             vertical-align: middle;
         }
 
-        /* Set specific widths for each column */
+        /* Column widths */
         table th:nth-child(1),
         table td:nth-child(1) {
             width: 40%;
-            padding-left: 24px;
+            min-width: 150px;
         }
 
         table th:nth-child(2),
         table td:nth-child(2) {
             width: 30%;
-            text-align: center;
+            min-width: 120px;
+            text-align: right;
         }
 
         table th:nth-child(3),
         table td:nth-child(3) {
             width: 30%;
+            min-width: 140px;
             text-align: center;
-        }
-
-        table tr:last-child td {
-            border-bottom: none;
-        }
-
-        table tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-
-        table tr:hover {
-            background-color: #fff5f5;
         }
 
         table td input {
             display: none;
-            width: 90%;
-            padding: 8px 12px;
-            border: 2px solid #ff6b6b;
-            border-radius: 8px;
-            font-size: 15px;
-            margin: 0 auto;
-        }
-
-        /* Improved button layout in table */
-        table td button {
-            margin: 0 5px;
-            padding: 8px 16px;
-            font-size: 14px;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
         }
 
         .warning {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
             color: #856404;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
-            margin-top: 30px;
-            font-size: 15px;
-            line-height: 1.6;
+            margin-top: 20px;
+            font-size: 14px;
         }
 
         footer {
@@ -175,30 +160,44 @@
             color: #666;
             font-size: 14px;
             border-top: 1px solid #eee;
-            margin-top: 40px;
         }
 
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
-                margin: 15px;
+                margin: 10px;
+                border-radius: 12px;
+            }
+
+            header {
+                font-size: 24px;
+                padding: 1rem;
             }
 
             .form-container, .search-container {
                 flex-direction: column;
+                gap: 10px;
             }
 
-            .form-container input, .search-container input {
+            input, button {
                 width: 100%;
+                margin: 0;
             }
 
-            button {
-                width: 100%;
+            table td button {
+                padding: 8px 12px;
+                font-size: 13px;
+                margin: 2px;
+            }
+
+            .table-container {
+                margin: 0 -15px;
+                padding: 0 15px;
             }
 
             table th, table td {
-                padding: 12px 8px;
-                font-size: 14px;
+                padding: 10px 8px;
+                font-size: 13px;
             }
         }
     </style>
@@ -217,17 +216,19 @@
             <input type="number" id="amount" placeholder="Enter amount (Rs)">
             <button onclick="addRow()">Add Entry</button>
         </div>
-        <table id="moneyTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Amount Owed (Rs)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="moneyTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount Owed (Rs)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
         <div class="warning">
             <p><strong>Important:</strong> Your data is stored in your browser's local storage. If you clear your
                 browser history or cache, your data will be lost. Please consider taking a screenshot or saving your
@@ -241,7 +242,7 @@
     </footer>
 
     <script>
-        // Previous JavaScript code remains unchanged
+        // Your existing JavaScript code remains unchanged
         window.onload = function () {
             loadDataFromLocalStorage();
         };
