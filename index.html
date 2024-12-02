@@ -127,6 +127,7 @@
         }
 
         @media (max-width: 600px) {
+
             table th,
             table td {
                 font-size: 14px;
@@ -166,7 +167,9 @@
         </table>
         <!-- Warning message -->
         <div class="warning">
-            <p><strong>Important:</strong> Your data is stored in your browser's local storage. If you clear your browser history or cache, your data will be lost. Please consider taking a screenshot or saving your data before clearing your browser's data.</p>
+            <p><strong>Important:</strong> Your data is stored in your browser's local storage. If you clear your
+                browser history or cache, your data will be lost. Please consider taking a screenshot or saving your
+                data before clearing your browser's data.</p>
         </div>
     </div>
     <footer>
@@ -190,13 +193,13 @@
             data.forEach((entry, index) => {
                 const newRow = tableBody.insertRow();
                 newRow.innerHTML = `
-                    <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
-                    <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
-                    <td>
-                        <button onclick="toggleEdit(this)">Edit</button>
-                        <button onclick="deleteRow(this)">Remove</button>
-                    </td>
-                `;
+            <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
+            <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
+            <td>
+                <button onclick="toggleEdit(this)">Edit</button>
+                <button onclick="deleteRow(this)">Remove</button>
+            </td>
+        `;
             });
         }
 
@@ -264,10 +267,16 @@
             const name = row.querySelector("span").textContent;
             const amount = row.querySelector("span:nth-child(2)").textContent;
 
+            // Retrieve data from localStorage
             const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+
+            // Filter out the deleted entry
             const newData = data.filter(entry => !(entry.name === name && entry.amount === amount));
 
+            // Save the updated data to localStorage
             saveDataToLocalStorage(newData);
+
+            // Remove the row from the table
             row.remove();
         }
 
