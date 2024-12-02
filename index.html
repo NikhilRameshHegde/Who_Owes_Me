@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,8 @@
             overflow: hidden;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #ddd;
@@ -71,11 +73,13 @@
             width: 90%;
         }
 
-        .form-container, .search-container {
+        .form-container,
+        .search-container {
             margin-bottom: 20px;
         }
 
-        .form-container input, .search-container input {
+        .form-container input,
+        .search-container input {
             padding: 10px;
             margin-right: 10px;
             border: 1px solid #ddd;
@@ -85,7 +89,8 @@
             width: calc(100% - 150px);
         }
 
-        .form-container button, .search-container button {
+        .form-container button,
+        .search-container button {
             padding: 10px 15px;
             background: #ff6f61;
             color: white;
@@ -95,7 +100,8 @@
             font-size: 16px;
         }
 
-        .form-container button:hover, .search-container button:hover {
+        .form-container button:hover,
+        .search-container button:hover {
             background: #ff5a4d;
         }
 
@@ -109,7 +115,9 @@
         }
 
         @media (max-width: 600px) {
-            table th, table td {
+
+            table th,
+            table td {
                 font-size: 14px;
                 padding: 8px;
             }
@@ -120,103 +128,140 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         Who Owes Me?
     </header>
     <div class="container">
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Search by name" oninput="searchTable()">
+        <div id="user-container" style="display:none;">
+            <div class="search-container">
+                <input type="text" id="search" placeholder="Search by name" oninput="searchTable()">
+            </div>
+            <div class="form-container">
+                <input type="text" id="name" placeholder="Enter name">
+                <input type="number" id="amount" placeholder="Enter amount (Rs)">
+                <button onclick="addRow()">Add Entry</button>
+            </div>
+            <table id="moneyTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount Owed (Rs)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button onclick="logout()">Logout</button>
         </div>
-        <div class="form-container">
-            <input type="text" id="name" placeholder="Enter name">
-            <input type="number" id="amount" placeholder="Enter amount (Rs)">
-            <button onclick="addRow()">Add Entry</button>
+
+        <div id="login-container" style="text-align:center;">
+            <button onclick="googleLogin()">Login with Google</button>
         </div>
-        <table id="moneyTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Amount Owed (Rs)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
     </div>
+
     <footer>
         Copyright © 2024 Who Owes Me?<br>
+        <br>
         By Nikhil Ramesh Hegde<br>
         All rights reserved.
     </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-firestore.js"></script>
+
     <script>
-        // Function to save table data to LocalStorage
-        function saveToLocalStorage() {
-            const tableRows = document.querySelectorAll("#moneyTable tbody tr");
-            const data = [];
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuLE65AYVHoSJ9uLxvdYcUzGKa29VcC9I",
+            authDomain: "who-owes-me-88e36.firebaseapp.com",
+            projectId: "who-owes-me-88e36",
+            storageBucket: "who-owes-me-88e36.firebasestorage.app",
+            messagingSenderId: "282607964330",
+            appId: "1:282607964330:web:eec9f29d87e66d9707c0d3",
+            measurementId: "G-G1FZT7M0Q8"
+        };
 
-            tableRows.forEach(row => {
-                const name = row.querySelector("td span").textContent;
-                const amount = row.querySelector("td span:nth-child(2)").textContent;
-                data.push({ name, amount });
-            });
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            localStorage.setItem("moneyTrackerData", JSON.stringify(data));
+        // Google sign-in function
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log('User signed in:', user);
+                    loadUserData(user.uid);  // Load the user's data from Firestore
+                    document.getElementById("login-container").style.display = "none";
+                    document.getElementById("user-container").style.display = "block";
+                })
+                .catch((error) => {
+                    console.error('Error signing in with Google:', error);
+                });
         }
 
-        // Function to load data from LocalStorage
-        function loadFromLocalStorage() {
-            const savedData = JSON.parse(localStorage.getItem("moneyTrackerData") || "[]");
-
-            savedData.forEach(entry => {
-                const table = document.querySelector("#moneyTable tbody");
-                const newRow = table.insertRow();
-
-                newRow.innerHTML = `
-                    <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
-                    <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
-                    <td>
-                        <button onclick="toggleEdit(this)">Edit</button>
-                        <button onclick="deleteRow(this)">Remove</button>
-                    </td>
-                `;
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                console.log('User signed out');
+                document.getElementById("login-container").style.display = "block";
+                document.getElementById("user-container").style.display = "none";
+            }).catch((error) => {
+                console.error('Error signing out:', error);
             });
         }
 
-        // Function to add a row
-        function addRow() {
-            const name = document.getElementById('name').value.trim();
-            const amount = document.getElementById('amount').value.trim();
-
-            if (name === '' || amount === '') {
-                alert('Please enter both name and amount.');
+        // Save to Firestore
+        function saveToFirestore(name, amount) {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Please login first.");
                 return;
             }
 
-            const table = document.querySelector("#moneyTable tbody");
-            const newRow = table.insertRow();
-
-            newRow.innerHTML = `
-                <td><span>${name}</span><input type="text" value="${name}"></td>
-                <td><span>${amount}</span><input type="number" value="${amount}"></td>
-                <td>
-                    <button onclick="toggleEdit(this)">Edit</button>
-                    <button onclick="deleteRow(this)">Remove</button>
-                </td>
-            `;
-
-            document.getElementById('name').value = '';
-            document.getElementById('amount').value = '';
-
-            saveToLocalStorage();
+            const userId = user.uid;
+            db.collection("users").doc(userId).collection("moneyEntries").add({
+                name: name,
+                amount: amount,
+            })
+                .then(() => {
+                    console.log("Entry added!");
+                    loadUserData(userId);  // Reload the user's data after adding a new entry
+                })
+                .catch((error) => {
+                    console.error("Error adding document: ", error);
+                });
         }
 
-        // Function to delete a row
-        function deleteRow(button) {
-            const row = button.parentElement.parentElement;
-            row.remove();
-            saveToLocalStorage();
+        // Load data from Firestore
+        function loadUserData(userId) {
+            const table = document.querySelector("#moneyTable tbody");
+            table.innerHTML = "";  // Clear the existing rows
+
+            db.collection("users").doc(userId).collection("moneyEntries").get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const newRow = table.insertRow();
+                        newRow.innerHTML = `
+                            <td><span>${data.name}</span><input type="text" value="${data.name}"></td>
+                            <td><span>${data.amount}</span><input type="number" value="${data.amount}"></td>
+                            <td>
+                                <button onclick="toggleEdit(this)">Edit</button>
+                                <button onclick="deleteEntry(this, '${doc.id}')">Remove</button>
+                            </td>
+                        `;
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error getting documents: ", error);
+                });
         }
 
         // Function to toggle edit mode
@@ -236,23 +281,54 @@
                 });
                 inputs.forEach(input => input.style.display = "none");
                 button.textContent = "Edit";
-                saveToLocalStorage();
+                saveToFirestore(inputs[0].value, inputs[1].value);  // Save changes
             }
         }
 
-        // Function to search the table
+        // Function to delete entry from Firestore
+        function deleteEntry(button, entryId) {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Please login first.");
+                return;
+            }
+
+            const userId = user.uid;
+            db.collection("users").doc(userId).collection("moneyEntries").doc(entryId).delete()
+                .then(() => {
+                    console.log("Entry deleted");
+                    loadUserData(userId);  // Reload data after deletion
+                })
+                .catch((error) => {
+                    console.error("Error deleting entry: ", error);
+                });
+        }
+
+        // Add entry to table and Firestore
+        function addRow() {
+            const name = document.getElementById("name").value;
+            const amount = document.getElementById("amount").value;
+
+            if (name && amount) {
+                saveToFirestore(name, amount);
+                document.getElementById("name").value = "";
+                document.getElementById("amount").value = "";
+            } else {
+                alert("Please fill in both fields.");
+            }
+        }
+
+        // Search in table
         function searchTable() {
-            const query = document.getElementById('search').value.toLowerCase();
+            const search = document.getElementById("search").value.toLowerCase();
             const rows = document.querySelectorAll("#moneyTable tbody tr");
 
             rows.forEach(row => {
-                const name = row.querySelector("td span").textContent.toLowerCase();
-                row.style.display = name.includes(query) ? "" : "none";
+                const name = row.cells[0].innerText.toLowerCase();
+                row.style.display = name.includes(search) ? "" : "none";
             });
         }
-
-        // Load data from LocalStorage on page load
-        window.onload = loadFromLocalStorage;
     </script>
 </body>
+
 </html>
