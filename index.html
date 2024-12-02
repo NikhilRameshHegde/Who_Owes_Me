@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,8 @@
             overflow: hidden;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #ddd;
@@ -71,11 +73,13 @@
             width: 90%;
         }
 
-        .form-container, .search-container {
+        .form-container,
+        .search-container {
             margin-bottom: 20px;
         }
 
-        .form-container input, .search-container input {
+        .form-container input,
+        .search-container input {
             padding: 10px;
             margin-right: 10px;
             border: 1px solid #ddd;
@@ -85,7 +89,8 @@
             width: calc(100% - 150px);
         }
 
-        .form-container button, .search-container button {
+        .form-container button,
+        .search-container button {
             padding: 10px 15px;
             background: #ff6f61;
             color: white;
@@ -95,7 +100,8 @@
             font-size: 16px;
         }
 
-        .form-container button:hover, .search-container button:hover {
+        .form-container button:hover,
+        .search-container button:hover {
             background: #ff5a4d;
         }
 
@@ -108,8 +114,21 @@
             border-top: 1px solid #ddd;
         }
 
+        .warning {
+            text-align: center;
+            padding: 15px;
+            background-color: #ffcc00;
+            color: #333;
+            font-size: 14px;
+            border: 1px solid #ff8c00;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
         @media (max-width: 600px) {
-            table th, table td {
+            table th,
+            table td {
                 font-size: 14px;
                 padding: 8px;
             }
@@ -120,6 +139,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         Who Owes Me?
@@ -144,16 +164,20 @@
             <tbody>
             </tbody>
         </table>
+        <!-- Warning message -->
+        <div class="warning">
+            <p><strong>Important:</strong> Your data is stored in your browser's local storage. If you clear your browser history or cache, your data will be lost. Please consider taking a screenshot or saving your data before clearing your browser's data.</p>
+        </div>
     </div>
     <footer>
-        Copyright © 2024 Who Owes Me?<br>
+        Copyright © 2024 Who Owes Me?<br><br>
         By Nikhil Ramesh Hegde<br>
         All rights reserved.
     </footer>
 
     <script>
         // Load data from localStorage when the page loads
-        window.onload = function() {
+        window.onload = function () {
             loadDataFromLocalStorage();
         };
 
@@ -259,4 +283,5 @@
         }
     </script>
 </body>
+
 </html>
