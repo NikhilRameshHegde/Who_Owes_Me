@@ -169,12 +169,12 @@
         All rights reserved.
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.19.0/firebase-firestore.js"></script>
-
-    <script>
-        // Firebase configuration
+    <!-- Firebase scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-firestore.js";
+        
         const firebaseConfig = {
             apiKey: "AIzaSyBn6Gi29iiXnjGVJH3rLugMxncNAbORPCM",
             authDomain: "who-owes-65659.firebaseapp.com",
@@ -186,14 +186,14 @@
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
 
         // Google sign-in function
         function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider)
                 .then((result) => {
                     const user = result.user;
                     console.log('User signed in:', user);
@@ -208,7 +208,7 @@
 
         // Logout function
         function logout() {
-            auth.signOut().then(() => {
+            signOut(auth).then(() => {
                 console.log('User signed out');
                 document.getElementById("login-container").style.display = "block";
                 document.getElementById("user-container").style.display = "none";
@@ -226,7 +226,7 @@
             }
 
             const userId = user.uid;
-            db.collection("users").doc(userId).collection("moneyEntries").add({
+            addDoc(collection(db, "users", userId, "moneyEntries"), {
                 name: name,
                 amount: amount,
             })
@@ -244,7 +244,7 @@
             const table = document.querySelector("#moneyTable tbody");
             table.innerHTML = "";  // Clear the existing rows
 
-            db.collection("users").doc(userId).collection("moneyEntries").get()
+            getDocs(collection(db, "users", userId, "moneyEntries"))
                 .then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
@@ -281,12 +281,12 @@
                 });
                 inputs.forEach(input => input.style.display = "none");
                 button.textContent = "Edit";
-                saveToFirestore(inputs[0].value, inputs[1].value);  // Save changes
+                saveToFirestore(inputs[0].value, inputs[1].value);  // Save updated entry to Firestore
             }
         }
 
         // Function to delete entry from Firestore
-        function deleteEntry(button, entryId) {
+        function deleteEntry(button, docId) {
             const user = auth.currentUser;
             if (!user) {
                 alert("Please login first.");
@@ -294,17 +294,34 @@
             }
 
             const userId = user.uid;
-            db.collection("users").doc(userId).collection("moneyEntries").doc(entryId).delete()
+            deleteDoc(doc(db, "users", userId, "moneyEntries", docId))
                 .then(() => {
-                    console.log("Entry deleted");
-                    loadUserData(userId);  // Reload data after deletion
+                    console.log("Entry deleted!");
+                    loadUserData(userId);  // Reload the data after deletion
                 })
                 .catch((error) => {
-                    console.error("Error deleting entry: ", error);
+                    console.error("Error deleting document: ", error);
                 });
         }
 
-        // Add entry to table and Firestore
+        // Search function for the table
+        function searchTable() {
+            const input = document.getElementById("search");
+            const filter = input.value.toLowerCase();
+            const rows = document.getElementById("moneyTable").getElementsByTagName("tr");
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                const name = cells[0].textContent.toLowerCase();
+                if (name.includes(filter)) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+        // Add row function
         function addRow() {
             const name = document.getElementById("name").value;
             const amount = document.getElementById("amount").value;
@@ -314,19 +331,8 @@
                 document.getElementById("name").value = "";
                 document.getElementById("amount").value = "";
             } else {
-                alert("Please fill in both fields.");
+                alert("Please enter both name and amount.");
             }
-        }
-
-        // Search in table
-        function searchTable() {
-            const search = document.getElementById("search").value.toLowerCase();
-            const rows = document.querySelectorAll("#moneyTable tbody tr");
-
-            rows.forEach(row => {
-                const name = row.cells[0].innerText.toLowerCase();
-                row.style.display = name.includes(search) ? "" : "none";
-            });
         }
     </script>
 </body>
