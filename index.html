@@ -79,10 +79,9 @@
             background: #ff5252;
         }
 
-        .table-container {
-            overflow-x: auto;
-            margin: 0 -20px;
-            padding: 0 20px;
+        /* Desktop Table Styles */
+        .desktop-view {
+            display: block;
         }
 
         table {
@@ -91,14 +90,12 @@
             border-spacing: 0;
             margin: 20px 0;
             background: white;
-            min-width: 600px; /* Minimum width to prevent squishing */
         }
 
         table th, table td {
             text-align: left;
             padding: 12px;
             border-bottom: 1px solid #eee;
-            word-break: break-word;
         }
 
         table th {
@@ -107,7 +104,6 @@
             font-weight: 600;
             text-transform: uppercase;
             font-size: 14px;
-            white-space: nowrap;
         }
 
         table td {
@@ -115,32 +111,49 @@
             vertical-align: middle;
         }
 
-        /* Column widths */
-        table th:nth-child(1),
-        table td:nth-child(1) {
-            width: 40%;
-            min-width: 150px;
-        }
-
-        table th:nth-child(2),
-        table td:nth-child(2) {
-            width: 30%;
-            min-width: 120px;
-            text-align: right;
-        }
-
-        table th:nth-child(3),
-        table td:nth-child(3) {
-            width: 30%;
-            min-width: 140px;
-            text-align: center;
-        }
-
         table td input {
             display: none;
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
+        }
+
+        /* Mobile Card Styles */
+        .mobile-view {
+            display: none;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+
+        .card-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .card-amount {
+            font-size: 20px;
+            color: #ff6b6b;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card input {
+            display: none;
+            margin-bottom: 8px;
         }
 
         .warning {
@@ -166,7 +179,6 @@
             .container {
                 padding: 15px;
                 margin: 10px;
-                border-radius: 12px;
             }
 
             header {
@@ -184,20 +196,13 @@
                 margin: 0;
             }
 
-            table td button {
-                padding: 8px 12px;
-                font-size: 13px;
-                margin: 2px;
+            /* Hide desktop view and show mobile view */
+            .desktop-view {
+                display: none;
             }
 
-            .table-container {
-                margin: 0 -15px;
-                padding: 0 15px;
-            }
-
-            table th, table td {
-                padding: 10px 8px;
-                font-size: 13px;
+            .mobile-view {
+                display: block;
             }
         }
     </style>
@@ -216,7 +221,9 @@
             <input type="number" id="amount" placeholder="Enter amount (Rs)">
             <button onclick="addRow()">Add Entry</button>
         </div>
-        <div class="table-container">
+
+        <!-- Desktop View -->
+        <div class="desktop-view">
             <table id="moneyTable">
                 <thead>
                     <tr>
@@ -229,6 +236,11 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile View -->
+        <div class="mobile-view" id="cardContainer">
+        </div>
+
         <div class="warning">
             <p><strong>Important:</strong> Your data is stored in your browser's local storage. If you clear your
                 browser history or cache, your data will be lost. Please consider taking a screenshot or saving your
@@ -242,26 +254,45 @@
     </footer>
 
     <script>
-        // Your existing JavaScript code remains unchanged
         window.onload = function () {
             loadDataFromLocalStorage();
         };
 
         function loadDataFromLocalStorage() {
             const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+            
+            // Update table view
             const tableBody = document.querySelector("#moneyTable tbody");
             tableBody.innerHTML = "";
 
+            // Update card view
+            const cardContainer = document.querySelector("#cardContainer");
+            cardContainer.innerHTML = "";
+
             data.forEach((entry, index) => {
+                // Add table row
                 const newRow = tableBody.insertRow();
                 newRow.innerHTML = `
                     <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
                     <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
                     <td>
-                        <button onclick="toggleEdit(this)">Edit</button>
-                        <button onclick="deleteRow(this)">Remove</button>
+                        <button onclick="toggleEdit(this, ${index})">Edit</button>
+                        <button onclick="deleteRow(this, ${index})">Remove</button>
                     </td>
                 `;
+
+                // Add card
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-name"><span>${entry.name}</span><input type="text" value="${entry.name}"></div>
+                    <div class="card-amount"><span>₹${entry.amount}</span><input type="number" value="${entry.amount}"></div>
+                    <div class="card-actions">
+                        <button onclick="toggleEdit(this, ${index})">Edit</button>
+                        <button onclick="deleteRow(this, ${index})">Remove</button>
+                    </div>
+                `;
+                cardContainer.appendChild(card);
             });
         }
 
@@ -286,65 +317,50 @@
             document.getElementById('amount').value = '';
         }
 
-        function toggleEdit(button) {
-            const row = button.parentElement.parentElement;
-            const spans = row.querySelectorAll("span");
-            const inputs = row.querySelectorAll("input");
+        function toggleEdit(button, index) {
+            const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+            const container = button.closest('.card, tr');
+            const spans = container.querySelectorAll("span");
+            const inputs = container.querySelectorAll("input");
 
             if (button.textContent === "Edit") {
                 spans.forEach(span => span.style.display = "none");
                 inputs.forEach(input => input.style.display = "block");
                 button.textContent = "Save";
             } else {
-                spans.forEach((span, index) => {
-                    span.textContent = inputs[index].value;
-                    span.style.display = "inline";
-                });
-                inputs.forEach(input => input.style.display = "none");
-                button.textContent = "Edit";
-                saveDataToLocalStorageFromTable();
+                const newName = inputs[0].value;
+                const newAmount = inputs[1].value;
+                
+                data[index] = { name: newName, amount: newAmount };
+                saveDataToLocalStorage(data);
+                loadDataFromLocalStorage();
             }
         }
 
-        function saveDataToLocalStorageFromTable() {
-            const data = [];
-            const rows = document.querySelectorAll("#moneyTable tbody tr");
-
-            rows.forEach(row => {
-                const spans = row.querySelectorAll("span");
-                data.push({
-                    name: spans[0].textContent,
-                    amount: spans[1].textContent
-                });
-            });
-
-            saveDataToLocalStorage(data);
-        }
-
-        function deleteRow(button) {
+        function deleteRow(button, index) {
             if (confirm('Are you sure you want to remove this entry?')) {
-                const row = button.parentElement.parentElement;
-                const spans = row.querySelectorAll("span");
-                const name = spans[0].textContent;
-                const amount = spans[1].textContent;
-
                 const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-                const newData = data.filter(entry =>
-                    !(entry.name === name && entry.amount.toString() === amount.toString())
-                );
-
-                saveDataToLocalStorage(newData);
-                row.remove();
+                data.splice(index, 1);
+                saveDataToLocalStorage(data);
+                loadDataFromLocalStorage();
             }
         }
 
         function searchTable() {
             const query = document.getElementById('search').value.toLowerCase();
             const rows = document.querySelectorAll("#moneyTable tbody tr");
+            const cards = document.querySelectorAll(".card");
 
+            // Search in table view
             rows.forEach(row => {
                 const name = row.querySelector("td span").textContent.toLowerCase();
                 row.style.display = name.includes(query) ? "" : "none";
+            });
+
+            // Search in card view
+            cards.forEach(card => {
+                const name = card.querySelector(".card-name span").textContent.toLowerCase();
+                card.style.display = name.includes(query) ? "" : "none";
             });
         }
     </script>
