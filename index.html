@@ -93,30 +93,38 @@
             border-spacing: 0;
             margin: 20px 0;
             background: white;
-            table-layout: fixed;
         }
 
         table th,
         table td {
-            text-align: center;
+            text-align: left;
             padding: 12px;
             border-bottom: 1px solid #eee;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 0; /* This forces the cell to wrap */
         }
 
         /* Set specific column widths */
         table th:nth-child(1),
         table td:nth-child(1) {
-            width: 40%;
+            width: 45%;
         }
 
         table th:nth-child(2),
         table td:nth-child(2) {
-            width: 30%;
+            width: 25%;
         }
 
         table th:nth-child(3),
         table td:nth-child(3) {
             width: 30%;
+        }
+
+        table td span {
+            display: block;
+            word-break: break-word;
         }
 
         table td input {
@@ -148,6 +156,8 @@
             margin-bottom: 16px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border: 1px solid #eee;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .card-name {
@@ -155,6 +165,7 @@
             font-weight: 600;
             margin-bottom: 8px;
             color: #333;
+            word-break: break-word;
         }
 
         .card-amount {
@@ -162,16 +173,21 @@
             color: #ff6b6b;
             margin-bottom: 16px;
             font-weight: 500;
+            word-break: break-word;
         }
 
         .card-actions {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
+        table td input,
         .card input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
             display: none;
-            margin-bottom: 8px;
         }
 
         .warning {
@@ -194,10 +210,11 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-                margin: 10px;
+            .card-actions button {
+                flex: 1;
+                min-width: 80px;
             }
+        }
 
             header {
                 font-size: 24px;
