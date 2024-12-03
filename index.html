@@ -81,7 +81,6 @@
         }
 
         /* Desktop Table Styles */
-        /* Updated Desktop Table Styles */
         .desktop-view {
             display: block;
             overflow-x: auto;
@@ -298,11 +297,9 @@
         function loadDataFromLocalStorage() {
             const data = JSON.parse(localStorage.getItem('moneyData')) || [];
 
-            // Update table view
             const tableBody = document.querySelector("#moneyTable tbody");
             tableBody.innerHTML = "";
 
-            // Update card view
             const cardContainer = document.querySelector("#cardContainer");
             cardContainer.innerHTML = "";
 
