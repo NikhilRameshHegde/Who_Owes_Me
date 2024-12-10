@@ -103,7 +103,6 @@
             word-wrap: break-word;
             overflow-wrap: break-word;
             max-width: 0;
-            /* This forces the cell to wrap */
         }
 
         /* Set specific column widths */
@@ -120,6 +119,7 @@
         table th:nth-child(3),
         table td:nth-child(3) {
             width: 30%;
+            text-align: center; /* Center align both header and content */
         }
 
         table td span {
@@ -517,5 +517,4 @@
         }
     </script>
 </body>
-
 </html>
