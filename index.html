@@ -241,6 +241,42 @@
                 display: block;
             }
         }
+
+        .csv-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .csv-container input[type="file"] {
+            display: none;
+        }
+        
+        .csv-container label {
+            padding: 12px 20px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .csv-container label:hover {
+            background: #45a049;
+        }
+        
+        .csv-container button {
+            flex: 1;
+            background: #2196F3;
+        }
+        
+        .csv-container button:hover {
+            background: #1976D2;
+        }
     </style>
 </head>
 
@@ -249,6 +285,14 @@
         Who Owes Me?
     </header>
     <div class="container">
+        <div class="csv-container">
+            <label for="csvFile">
+                Import CSV
+                <input type="file" id="csvFile" accept=".csv" onchange="importCSV(this)">
+            </label>
+            <button onclick="exportCSV()">Export CSV</button>
+        </div>
+
         <div class="search-container">
             <input type="text" id="search" placeholder="🔍 Search by name..." oninput="searchTable()">
         </div>
@@ -396,6 +440,80 @@
                 const name = card.querySelector(".card-name span").textContent.toLowerCase();
                 card.style.display = name.includes(query) ? "" : "none";
             });
+        }
+
+        function exportCSV() {
+            const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+            if (data.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            // Create CSV content
+            const csvContent = ['Name,Amount'];
+            data.forEach(row => {
+                csvContent.push(`${row.name},${row.amount}`);
+            });
+
+            // Create and trigger download
+            const blob = new Blob([csvContent.join('\n')], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'who_owes_me.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Add new function to import data from CSV
+        function importCSV(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // Parse CSV content
+                    const text = e.target.result;
+                    const lines = text.split('\n');
+                    
+                    // Skip header row and process data
+                    const data = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (line) {
+                            const [name, amount] = line.split(',');
+                            if (name && amount) {
+                                data.push({
+                                    name: name.trim(),
+                                    amount: amount.trim()
+                                });
+                            }
+                        }
+                    }
+
+                    if (data.length === 0) {
+                        alert('No valid data found in CSV file');
+                        return;
+                    }
+
+                    // Confirm before overwriting existing data
+                    if (confirm('This will replace your existing data. Continue?')) {
+                        saveDataToLocalStorage(data);
+                        loadDataFromLocalStorage();
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing CSV file. Please check the file format.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            // Reset file input
+            input.value = '';
         }
     </script>
 </body>
