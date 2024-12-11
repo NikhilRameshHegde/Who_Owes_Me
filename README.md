@@ -9,3 +9,4 @@ Who Owes Me? is a sleek and user-friendly web application designed to help you t
 - The data will stay saved until you clear your browser's history or cache.
 - It is specific to the device and browser you're using, so it won't appear on other devices or browsers.
 - If you clear your browser's data, your information will be lost.
+- Please consider exporting the data to csv before clearing the cache or the browser's data.
