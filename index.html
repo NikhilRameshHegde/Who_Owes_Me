@@ -25,9 +25,14 @@
         <div class="search-container">
             <input type="text" id="search" placeholder="🔍 Search by name..." oninput="searchTable()">
         </div>
+        <div class="summary-container">
+            <div class="total-amount">Total Owed: ₹<span id="totalAmount">0</span></div>
+            <div class="entry-count">Total Entries: <span id="entryCount">0</span></div>
+        </div>
         <div class="form-container">
             <input type="text" id="name" placeholder="Enter name">
             <input type="number" id="amount" placeholder="Enter amount (Rs)">
+            <input type="text" id="category" placeholder="Category (optional)">
             <button onclick="addRow()">Add Entry</button>
         </div>
 
@@ -36,8 +41,9 @@
             <table id="moneyTable">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Amount Owed (Rs)</th>
+                        <th onclick="sortData('name')" style="cursor: pointer;">Name ↑</th>
+                        <th onclick="sortData('amount')" style="cursor: pointer;">Amount Owed (Rs) ↑</th>
+                        <th>Last Updated On</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
