@@ -5,7 +5,7 @@ window.onload = function () {
 
 function loadDataFromLocalStorage() {
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-
+    
     const tableBody = document.querySelector("#moneyTable tbody");
     tableBody.innerHTML = "";
 
@@ -13,7 +13,6 @@ function loadDataFromLocalStorage() {
     cardContainer.innerHTML = "";
 
     data.forEach((entry, index) => {
-        // Format dates with time
         const createdDate = new Date(entry.createdOn || entry.date);
         const updatedDate = new Date(entry.date);
         const dateTimeFormat = (date) => {
@@ -21,11 +20,13 @@ function loadDataFromLocalStorage() {
             return `${date.toLocaleDateString()}<br>${date.toLocaleTimeString([], timeOptions)}`;
         };
 
-        // Add table row
+        // Add table row with correct column order and matching input fields
         const newRow = tableBody.insertRow();
+        newRow.setAttribute('data-category', entry.category || '');
         newRow.innerHTML = `
             <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
             <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
+            <td><span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}"></td>
             <td><span>${dateTimeFormat(createdDate)}</span></td>
             <td><span>${dateTimeFormat(updatedDate)}</span></td>
             <td>
@@ -34,12 +35,14 @@ function loadDataFromLocalStorage() {
             </td>
         `;
 
-        // Add card
+        // Add card with correct order
         const card = document.createElement('div');
         card.className = 'card';
+        card.setAttribute('data-category', entry.category || '');
         card.innerHTML = `
             <div class="card-name"><span>${entry.name}</span><input type="text" value="${entry.name}"></div>
             <div class="card-amount"><span>₹${entry.amount}</span><input type="number" value="${entry.amount}"></div>
+            <div class="card-category">Category: <span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}"></div>
             <div class="card-date">Created: <span>${dateTimeFormat(createdDate)}</span></div>
             <div class="card-date">Updated: <span>${dateTimeFormat(updatedDate)}</span></div>
             <div class="card-actions">
@@ -50,13 +53,8 @@ function loadDataFromLocalStorage() {
         cardContainer.appendChild(card);
     });
 
-    function updateSummary(data) {
-        const total = data.reduce((sum, entry) => sum + Number(entry.amount), 0);
-        document.getElementById('totalAmount').textContent = total.toLocaleString();
-        document.getElementById('entryCount').textContent = data.length;
-    }
-
     updateSummary(data);
+    loadCategories();
 }
 
 function saveDataToLocalStorage(data) {
@@ -79,8 +77,8 @@ function addRow() {
         name, 
         amount,
         category,
-        createdOn: currentDate,  // Add creation date
-        date: currentDate        // This will serve as last updated date
+        createdOn: currentDate,
+        date: currentDate
     });
     saveDataToLocalStorage(data);
     loadDataFromLocalStorage();
@@ -167,12 +165,12 @@ function exportCSV() {
         return;
     }
 
-    // Create CSV content with timestamps
-    const csvContent = ['Name,Amount,Created On,Last Updated'];
+    // Create CSV content with timestamps and category
+    const csvContent = ['Name,Amount,Category,Created On,Last Updated'];
     data.forEach(row => {
         const createdDate = new Date(row.createdOn || row.date);
         const updatedDate = new Date(row.date);
-        csvContent.push(`${row.name},${row.amount},${createdDate.toISOString()},${updatedDate.toISOString()}`);
+        csvContent.push(`${row.name},${row.amount},${row.category || ''},${createdDate.toISOString()},${updatedDate.toISOString()}`);
     });
 
     // Create and trigger download
@@ -202,19 +200,33 @@ function importCSV(input) {
             // Get headers
             const headers = lines[0].toLowerCase().split(',');
             const hasTimestamps = headers.includes('created on') && headers.includes('last updated');
+            const hasCategory = headers.includes('category');
 
             // Skip header row and process data
             const data = [];
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (line) {
-                    if (hasTimestamps) {
-                        // Parse CSV with timestamps
+                    if (hasTimestamps && hasCategory) {
+                        // Parse CSV with timestamps and category
+                        const [name, amount, category, createdOn, date] = line.split(',');
+                        if (name && amount) {
+                            data.push({
+                                name: name.trim(),
+                                amount: amount.trim(),
+                                category: category.trim(),
+                                createdOn: createdOn.trim(),
+                                date: date.trim()
+                            });
+                        }
+                    } else if (hasTimestamps) {
+                        // Parse CSV with timestamps but no category
                         const [name, amount, createdOn, date] = line.split(',');
                         if (name && amount) {
                             data.push({
                                 name: name.trim(),
                                 amount: amount.trim(),
+                                category: '',
                                 createdOn: createdOn.trim(),
                                 date: date.trim()
                             });
@@ -227,6 +239,7 @@ function importCSV(input) {
                             data.push({
                                 name: name.trim(),
                                 amount: amount.trim(),
+                                category: '',
                                 createdOn: currentDate,
                                 date: currentDate
                             });
@@ -302,4 +315,22 @@ function setupBackupReminder() {
             }
         }
     }, REMINDER_INTERVAL);
+}
+
+function updateSummary(data) {
+    // Calculate total amount (ensure we're using valid numbers)
+    const totalAmount = data.reduce((sum, entry) => {
+        const amount = parseFloat(entry.amount) || 0;  // Convert to number, use 0 if invalid
+        return sum + amount;
+    }, 0);
+    
+    // Format the total amount to handle decimals properly
+    const formattedTotal = totalAmount.toFixed(2);  // Show 2 decimal places
+    
+    // Update the display
+    document.getElementById('totalAmount').textContent = formattedTotal;
+    document.getElementById('entryCount').textContent = data.length;
+
+    // Log for debugging
+    console.log('Total Amount:', formattedTotal, 'Entry Count:', data.length);
 }

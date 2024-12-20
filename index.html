@@ -25,6 +25,10 @@
         <div class="search-container">
             <input type="text" id="search" placeholder="🔍 Search by name..." oninput="searchTable()">
         </div>
+        <div class="filter-container">
+            <input type="text" id="categoryFilter" list="categories" placeholder="Filter by category..." oninput="filterByCategory()">
+            <datalist id="categories"></datalist>
+        </div>
         <div class="summary-container">
             <div class="total-amount">Total Owed: ₹<span id="totalAmount">0</span></div>
             <div class="entry-count">Total Entries: <span id="entryCount">0</span></div>
@@ -32,7 +36,7 @@
         <div class="form-container">
             <input type="text" id="name" placeholder="Enter name">
             <input type="number" id="amount" placeholder="Enter amount (Rs)">
-            <input type="text" id="category" placeholder="Category (optional)">
+            <input type="text" id="category" list="categories" placeholder="Category (optional)">
             <button onclick="addRow()">Add Entry</button>
         </div>
 
@@ -43,6 +47,7 @@
                     <tr>
                         <th onclick="sortData('name')" style="cursor: pointer;">Name ↑</th>
                         <th onclick="sortData('amount')" style="cursor: pointer;">Amount Owed (Rs) ↑</th>
+                        <th>Category</th>
                         <th>Created On</th>
                         <th>Last Updated On</th>
                         <th>Actions</th>
