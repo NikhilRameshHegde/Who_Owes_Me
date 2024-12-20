@@ -101,6 +101,7 @@ table td {
 table th:nth-child(1),
 table td:nth-child(1) {
     width: 25%;
+    text-align: left;
 }
 
 table th:nth-child(2),
@@ -167,6 +168,7 @@ table td:last-child button {
     margin-bottom: 8px;
     color: #333;
     word-break: break-word;
+    text-align: left;
 }
 
 .card-amount {
@@ -339,4 +341,8 @@ button[onclick*="deleteRow"]:hover {
 .card-date span {
     display: block;
     line-height: 1.5;
+}
+
+table td:nth-child(1) span {
+    text-align: left;
 }

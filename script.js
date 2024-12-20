@@ -167,10 +167,12 @@ function exportCSV() {
         return;
     }
 
-    // Create CSV content
-    const csvContent = ['Name,Amount'];
+    // Create CSV content with timestamps
+    const csvContent = ['Name,Amount,Created On,Last Updated'];
     data.forEach(row => {
-        csvContent.push(`${row.name},${row.amount}`);
+        const createdDate = new Date(row.createdOn || row.date);
+        const updatedDate = new Date(row.date);
+        csvContent.push(`${row.name},${row.amount},${createdDate.toISOString()},${updatedDate.toISOString()}`);
     });
 
     // Create and trigger download
@@ -186,7 +188,6 @@ function exportCSV() {
     window.URL.revokeObjectURL(url);
 }
 
-// Add new function to import data from CSV
 function importCSV(input) {
     const file = input.files[0];
     if (!file) return;
@@ -197,18 +198,39 @@ function importCSV(input) {
             // Parse CSV content
             const text = e.target.result;
             const lines = text.split('\n');
+            
+            // Get headers
+            const headers = lines[0].toLowerCase().split(',');
+            const hasTimestamps = headers.includes('created on') && headers.includes('last updated');
 
             // Skip header row and process data
             const data = [];
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (line) {
-                    const [name, amount] = line.split(',');
-                    if (name && amount) {
-                        data.push({
-                            name: name.trim(),
-                            amount: amount.trim()
-                        });
+                    if (hasTimestamps) {
+                        // Parse CSV with timestamps
+                        const [name, amount, createdOn, date] = line.split(',');
+                        if (name && amount) {
+                            data.push({
+                                name: name.trim(),
+                                amount: amount.trim(),
+                                createdOn: createdOn.trim(),
+                                date: date.trim()
+                            });
+                        }
+                    } else {
+                        // Handle old format CSV (backwards compatibility)
+                        const [name, amount] = line.split(',');
+                        if (name && amount) {
+                            const currentDate = new Date().toISOString();
+                            data.push({
+                                name: name.trim(),
+                                amount: amount.trim(),
+                                createdOn: currentDate,
+                                date: currentDate
+                            });
+                        }
                     }
                 }
             }
