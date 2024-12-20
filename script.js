@@ -110,15 +110,16 @@ function toggleEdit(button, index) {
         // Save changes
         const newName = inputs[0].value;
         const newAmount = inputs[1].value;
+        const newCategory = inputs[2].value;  // Get the category value
 
-        // Preserve the existing creation date and category
+        // Preserve the existing creation date and update other fields
         const existingEntry = data[index];
         data[index] = { 
             name: newName, 
             amount: newAmount,
+            category: newCategory,  // Save the category
             date: new Date().toISOString(), // Update the last modified date
-            createdOn: existingEntry.createdOn || existingEntry.date, // Preserve creation date
-            category: existingEntry.category // Preserve the category
+            createdOn: existingEntry.createdOn || existingEntry.date // Preserve creation date
         };
         
         saveDataToLocalStorage(data);
