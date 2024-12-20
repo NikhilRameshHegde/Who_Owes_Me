@@ -13,12 +13,21 @@ function loadDataFromLocalStorage() {
     cardContainer.innerHTML = "";
 
     data.forEach((entry, index) => {
+        // Format dates with time
+        const createdDate = new Date(entry.createdOn || entry.date);
+        const updatedDate = new Date(entry.date);
+        const dateTimeFormat = (date) => {
+            const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+            return `${date.toLocaleDateString()}<br>${date.toLocaleTimeString([], timeOptions)}`;
+        };
+
         // Add table row
         const newRow = tableBody.insertRow();
         newRow.innerHTML = `
             <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
             <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
-            <td><span>${new Date(entry.date).toLocaleDateString()}</span></td>
+            <td><span>${dateTimeFormat(createdDate)}</span></td>
+            <td><span>${dateTimeFormat(updatedDate)}</span></td>
             <td>
                 <button onclick="toggleEdit(this, ${index})">Edit</button>
                 <button onclick="deleteRow(this, ${index})">Remove</button>
@@ -31,7 +40,8 @@ function loadDataFromLocalStorage() {
         card.innerHTML = `
             <div class="card-name"><span>${entry.name}</span><input type="text" value="${entry.name}"></div>
             <div class="card-amount"><span>₹${entry.amount}</span><input type="number" value="${entry.amount}"></div>
-            <div class="card-date"><span>${new Date(entry.date).toLocaleDateString()}</span></div>
+            <div class="card-date">Created: <span>${dateTimeFormat(createdDate)}</span></div>
+            <div class="card-date">Updated: <span>${dateTimeFormat(updatedDate)}</span></div>
             <div class="card-actions">
                 <button onclick="toggleEdit(this, ${index})">Edit</button>
                 <button onclick="deleteRow(this, ${index})">Remove</button>
@@ -63,12 +73,14 @@ function addRow() {
         return;
     }
 
+    const currentDate = new Date().toISOString();
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
     data.push({ 
         name, 
         amount,
         category,
-        date: new Date().toISOString()
+        createdOn: currentDate,  // Add creation date
+        date: currentDate        // This will serve as last updated date
     });
     saveDataToLocalStorage(data);
     loadDataFromLocalStorage();
@@ -101,13 +113,14 @@ function toggleEdit(button, index) {
         const newName = inputs[0].value;
         const newAmount = inputs[1].value;
 
-        // Preserve the existing date and category
+        // Preserve the existing creation date and category
         const existingEntry = data[index];
         data[index] = { 
             name: newName, 
             amount: newAmount,
-            date: existingEntry.date, // Preserve the original date
-            category: existingEntry.category // Preserve the category if it exists
+            date: new Date().toISOString(), // Update the last modified date
+            createdOn: existingEntry.createdOn || existingEntry.date, // Preserve creation date
+            category: existingEntry.category // Preserve the category
         };
         
         saveDataToLocalStorage(data);
