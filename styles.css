@@ -314,7 +314,8 @@ footer {
 /* Modify the default button style (will be used for delete/remove) */
 button {
     padding: 12px 20px;
-    background: #ff6b6b;  /* Keep red for delete/remove */
+    background: #ff6b6b;
+    /* Keep red for delete/remove */
     color: white;
     border: none;
     border-radius: 10px;
@@ -327,20 +328,24 @@ button {
 
 /* Add styles for the Add Entry button */
 .form-container button {
-    background: #4CAF50;  /* Green color */
+    background: #4CAF50;
+    /* Green color */
 }
 
 .form-container button:hover {
-    background: #45a049;  /* Darker green on hover */
+    background: #45a049;
+    /* Darker green on hover */
 }
 
 /* Add styles for the Edit button */
 button[onclick*="toggleEdit"] {
-    background: #2196F3;  /* Blue color */
+    background: #2196F3;
+    /* Blue color */
 }
 
 button[onclick*="toggleEdit"]:hover {
-    background: #1976D2;  /* Darker blue on hover */
+    background: #1976D2;
+    /* Darker blue on hover */
 }
 
 /* Keep the delete/remove button hover state */
@@ -360,9 +365,13 @@ table td:nth-child(1) span {
 /* Add styles for category filter and display */
 .filter-container {
     margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
 .filter-container input {
+    display: block;
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #e1e1e1;
@@ -374,4 +383,98 @@ table td:nth-child(1) span {
     color: #666;
     margin: 8px 0;
     font-size: 14px;
+}
+
+.amount-controls {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.amount-controls input.adjust-amount {
+    display: block !important;
+    flex: 1;
+    padding: 8px;
+    margin: 0;
+    min-width: 100px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.amount-controls button.amount-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    background: #2196F3;
+    min-width: 80px;
+}
+
+.amount-controls button.amount-btn:hover {
+    background: #1976D2;
+}
+
+/* Mobile responsiveness for amount controls */
+@media (max-width: 768px) {
+    .amount-controls {
+        flex-wrap: wrap;
+    }
+
+    .amount-controls input.adjust-amount {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .amount-controls button.amount-btn {
+        flex: 1;
+    }
+}
+
+/* Add these styles to ensure category input is visible */
+input[list="categories"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.card input[list="categories"],
+table td input[list="categories"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Make sure inputs are visible when editing */
+.card input:not([type="hidden"]):not(#categoryFilter),
+table td input:not([type="hidden"]):not(#categoryFilter) {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    margin: 2px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+
+    .search-container,
+    .filter-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-container input {
+        width: 100%;
+    }
+}
+
+/* Add this to ensure the category filter is always visible */
+#categoryFilter {
+    display: block !important;
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e1e1;
+    border-radius: 10px;
+    font-size: 15px;
 }

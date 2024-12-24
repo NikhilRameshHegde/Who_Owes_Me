@@ -5,7 +5,7 @@ window.onload = function () {
 
 function loadDataFromLocalStorage() {
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-    
+
     const tableBody = document.querySelector("#moneyTable tbody");
     tableBody.innerHTML = "";
 
@@ -26,7 +26,7 @@ function loadDataFromLocalStorage() {
         newRow.innerHTML = `
             <td><span>${entry.name}</span><input type="text" value="${entry.name}"></td>
             <td><span>${entry.amount}</span><input type="number" value="${entry.amount}"></td>
-            <td><span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}"></td>
+            <td><span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}" list="categories"></td>
             <td><span>${dateTimeFormat(createdDate)}</span></td>
             <td><span>${dateTimeFormat(updatedDate)}</span></td>
             <td>
@@ -42,7 +42,7 @@ function loadDataFromLocalStorage() {
         card.innerHTML = `
             <div class="card-name"><span>${entry.name}</span><input type="text" value="${entry.name}"></div>
             <div class="card-amount"><span>₹${entry.amount}</span><input type="number" value="${entry.amount}"></div>
-            <div class="card-category">Category: <span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}"></div>
+            <div class="card-category">Category: <span>${entry.category || '-'}</span><input type="text" value="${entry.category || ''}" list="categories"></div>
             <div class="card-date">Created: <span>${dateTimeFormat(createdDate)}</span></div>
             <div class="card-date">Updated: <span>${dateTimeFormat(updatedDate)}</span></div>
             <div class="card-actions">
@@ -73,8 +73,8 @@ function addRow() {
 
     const currentDate = new Date().toISOString();
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-    data.push({ 
-        name, 
+    data.push({
+        name,
         amount,
         category,
         createdOn: currentDate,
@@ -91,44 +91,72 @@ function toggleEdit(button, index) {
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
     const container = button.closest('.card, tr');
     const spans = container.querySelectorAll("span");
-    const inputs = container.querySelectorAll("input");
+    const inputs = container.querySelectorAll("input:not(.adjust-amount)");
     const actionCell = button.parentElement;
 
     if (button.textContent === "Edit") {
         // Switch to edit mode
         spans.forEach(span => span.style.display = "none");
-        inputs.forEach(input => input.style.display = "block");
-        
+        inputs.forEach(input => {
+            input.style.display = "block";
+            input.disabled = false;
+        });
+
+        // Remove existing amount controls if any
+        const existingControls = container.querySelector('.amount-controls');
+        if (existingControls) {
+            existingControls.remove();
+        }
+
+        // Add amount adjustment controls
+        const amountInput = container.querySelector('input[type="number"]:not(.adjust-amount)');
+        if (amountInput) {
+            const amountControls = document.createElement('div');
+            amountControls.className = 'amount-controls';
+            amountControls.innerHTML = `
+                <input type="number" class="adjust-amount" placeholder="Enter adjustment amount" step="0.01" style="display: block;">
+                <button class="amount-btn" onclick="adjustAmount(this, 1)">Add</button>
+                <button class="amount-btn" onclick="adjustAmount(this, -1)">Subtract</button>
+            `;
+            amountInput.parentNode.appendChild(amountControls);
+
+            // Ensure the adjustment input is visible and enabled
+            const adjustInput = amountControls.querySelector('.adjust-amount');
+            adjustInput.style.display = 'block';
+            adjustInput.disabled = false;
+        }
+
         // Change buttons
         button.textContent = "Save";
         const removeButton = actionCell.querySelector('button[onclick*="deleteRow"]');
         removeButton.textContent = "Cancel";
         removeButton.onclick = () => {
-            loadDataFromLocalStorage(); // Reset the view
+            loadDataFromLocalStorage();
         };
     } else {
         // Save changes
         const newName = inputs[0].value;
         const newAmount = inputs[1].value;
-        const newCategory = inputs[2].value;  // Get the category value
+        const categoryInput = container.querySelector('input[list="categories"]');
+        const newCategory = categoryInput ? categoryInput.value.trim() : '';
+
+        if (!newName || !newAmount) {
+            alert('Name and amount are required!');
+            return;
+        }
 
         // Preserve the existing creation date and update other fields
         const existingEntry = data[index];
-        data[index] = { 
-            name: newName, 
+        data[index] = {
+            name: newName,
             amount: newAmount,
-            category: newCategory,  // Save the category
-            date: new Date().toISOString(), // Update the last modified date
-            createdOn: existingEntry.createdOn || existingEntry.date // Preserve creation date
+            category: newCategory,
+            date: new Date().toISOString(),
+            createdOn: existingEntry.createdOn || existingEntry.date
         };
-        
+
         saveDataToLocalStorage(data);
         loadDataFromLocalStorage();
-        
-        // Reset button text and onclick (will be handled by loadDataFromLocalStorage)
-        const removeButton = actionCell.querySelector('button');
-        removeButton.textContent = "Remove";
-        removeButton.onclick = () => deleteRow(removeButton, index);
     }
 }
 
@@ -142,20 +170,39 @@ function deleteRow(button, index) {
 }
 
 function searchTable() {
-    const query = document.getElementById('search').value.toLowerCase();
+    const nameQuery = document.getElementById('search').value.toLowerCase();
+    const categoryQuery = document.getElementById('categoryFilter').value.toLowerCase();
     const rows = document.querySelectorAll("#moneyTable tbody tr");
     const cards = document.querySelectorAll(".card");
 
     // Search in table view
     rows.forEach(row => {
         const name = row.querySelector("td span").textContent.toLowerCase();
-        row.style.display = name.includes(query) ? "" : "none";
+        const category = row.getAttribute('data-category').toLowerCase();
+
+        const matchesName = name.includes(nameQuery);
+        const matchesCategory = category.includes(categoryQuery);
+
+        // Show row if it matches both name AND category filters (when both are present)
+        // Or if it matches the present filter when only one is being used
+        const shouldShow = (nameQuery === '' || matchesName) &&
+            (categoryQuery === '' || matchesCategory);
+
+        row.style.display = shouldShow ? "" : "none";
     });
 
     // Search in card view
     cards.forEach(card => {
         const name = card.querySelector(".card-name span").textContent.toLowerCase();
-        card.style.display = name.includes(query) ? "" : "none";
+        const category = card.getAttribute('data-category').toLowerCase();
+
+        const matchesName = name.includes(nameQuery);
+        const matchesCategory = category.includes(categoryQuery);
+
+        const shouldShow = (nameQuery === '' || matchesName) &&
+            (categoryQuery === '' || matchesCategory);
+
+        card.style.display = shouldShow ? "" : "none";
     });
 }
 
@@ -197,7 +244,7 @@ function importCSV(input) {
             // Parse CSV content
             const text = e.target.result;
             const lines = text.split('\n');
-            
+
             // Get headers
             const headers = lines[0].toLowerCase().split(',');
             const hasTimestamps = headers.includes('created on') && headers.includes('last updated');
@@ -277,36 +324,36 @@ let sortOrders = {
 
 function sortData(column) {
     const data = JSON.parse(localStorage.getItem('moneyData')) || [];
-    
+
     data.sort((a, b) => {
         if (column === 'name') {
-            return sortOrders.name 
+            return sortOrders.name
                 ? a.name.localeCompare(b.name)
                 : b.name.localeCompare(a.name);
         } else if (column === 'amount') {
-            return sortOrders.amount 
+            return sortOrders.amount
                 ? Number(a.amount) - Number(b.amount)
                 : Number(b.amount) - Number(a.amount);
         }
     });
-    
+
     // Toggle sort order for the clicked column
     sortOrders[column] = !sortOrders[column];
-    
+
     // Update arrow indicators in the table headers
     const nameHeader = document.querySelector('th[onclick="sortData(\'name\')"]');
     const amountHeader = document.querySelector('th[onclick="sortData(\'amount\')"]');
-    
+
     nameHeader.textContent = `Name ${sortOrders.name ? '↑' : '↓'}`;
     amountHeader.textContent = `Amount Owed (Rs) ${sortOrders.amount ? '↑' : '↓'}`;
-    
+
     saveDataToLocalStorage(data);
     loadDataFromLocalStorage();
 }
 
 function setupBackupReminder() {
     const REMINDER_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days
-    
+
     setInterval(() => {
         const lastBackup = localStorage.getItem('lastBackupDate');
         if (!lastBackup || Date.now() - new Date(lastBackup).getTime() > REMINDER_INTERVAL) {
@@ -324,14 +371,89 @@ function updateSummary(data) {
         const amount = parseFloat(entry.amount) || 0;  // Convert to number, use 0 if invalid
         return sum + amount;
     }, 0);
-    
-    // Format the total amount to handle decimals properly
-    const formattedTotal = totalAmount.toFixed(2);  // Show 2 decimal places
-    
+
+    // Format the total amount: only show decimals if they exist
+    const formattedTotal = totalAmount % 1 === 0 ?
+        totalAmount.toString() :
+        totalAmount.toFixed(2);
+
     // Update the display
     document.getElementById('totalAmount').textContent = formattedTotal;
     document.getElementById('entryCount').textContent = data.length;
 
     // Log for debugging
     console.log('Total Amount:', formattedTotal, 'Entry Count:', data.length);
+}
+
+function adjustAmount(button, operation) {
+    // Find the main amount input and adjustment input
+    const container = button.closest('.amount-controls');
+    const amountInput = container.parentNode.querySelector('input[type="number"]:not(.adjust-amount)');
+    const adjustInput = container.querySelector('.adjust-amount');
+
+    // Validate the adjustment input
+    const adjustValue = parseFloat(adjustInput.value);
+    if (isNaN(adjustValue) || adjustValue <= 0) {
+        alert('Please enter a valid positive amount');
+        adjustInput.value = '';
+        return;
+    }
+
+    // Calculate new amount
+    let currentAmount = parseFloat(amountInput.value) || 0;
+    const newAmount = currentAmount + (operation * adjustValue);
+
+    // Ensure amount doesn't go below 0
+    if (newAmount < 0) {
+        alert('Amount cannot be negative');
+        adjustInput.value = '';
+        return;
+    }
+
+    // Update the amount input with formatted value
+    amountInput.value = newAmount % 1 === 0 ?
+        newAmount.toString() :
+        newAmount.toFixed(2);
+
+    // Clear the adjustment input
+    adjustInput.value = '';
+}
+
+function filterByCategory() {
+    const filterValue = document.getElementById('categoryFilter').value.toLowerCase();
+    const rows = document.querySelectorAll("#moneyTable tbody tr");
+    const cards = document.querySelectorAll(".card");
+
+    // Filter table rows in desktop view
+    rows.forEach(row => {
+        const category = row.getAttribute('data-category').toLowerCase();
+        row.style.display = (filterValue === '' || category.includes(filterValue)) ? "" : "none";
+    });
+
+    // Filter cards in mobile view
+    cards.forEach(card => {
+        const category = card.getAttribute('data-category').toLowerCase();
+        card.style.display = (filterValue === '' || category.includes(filterValue)) ? "" : "none";
+    });
+}
+
+function loadCategories() {
+    const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+    const categories = new Set();
+
+    // Collect all unique categories
+    data.forEach(entry => {
+        if (entry.category) {
+            categories.add(entry.category);
+        }
+    });
+
+    // Update datalist with unique categories
+    const datalist = document.getElementById('categories');
+    datalist.innerHTML = '';
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        datalist.appendChild(option);
+    });
 }
