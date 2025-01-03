@@ -466,11 +466,17 @@ function clearAllEntries() {
         return;
     }
 
-    // Ask for confirmation before clearing
-    if (confirm('Are you sure you want to clear all entries? This cannot be undone!')) {
-        // Clear the data
-        localStorage.setItem('moneyData', JSON.stringify([]));
-        loadDataFromLocalStorage();
-        alert('All entries have been cleared.');
+    // Add touchstart event handling
+    try {
+        // Ask for confirmation before clearing
+        if (confirm('Are you sure you want to clear all entries? This cannot be undone!')) {
+            // Clear the data
+            localStorage.setItem('moneyData', JSON.stringify([]));
+            loadDataFromLocalStorage();
+            alert('All entries have been cleared.');
+        }
+    } catch (error) {
+        console.error('Error clearing entries:', error);
+        alert('Error clearing entries. Please try again.');
     }
 }

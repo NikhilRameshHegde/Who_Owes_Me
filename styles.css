@@ -487,3 +487,13 @@ table td input:not([type="hidden"]):not(#categoryFilter) {
 .clear-button:hover {
     background: #c82333;  /* Darker red on hover */
 }
+
+/* Improve touch target size for mobile */
+@media (max-width: 768px) {
+    .clear-button {
+        min-height: 44px;  /* Minimum touch target size */
+        padding: 12px 20px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;  /* Remove tap highlight on iOS */
+    }
+}
