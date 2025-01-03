@@ -17,7 +17,13 @@ function loadDataFromLocalStorage() {
         const updatedDate = new Date(entry.date);
         const dateTimeFormat = (date) => {
             const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-            return `${date.toLocaleDateString()}<br>${date.toLocaleTimeString([], timeOptions)}`;
+            // Format date as DD/MM/YYYY
+            const dateStr = date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            return `${dateStr}<br>${date.toLocaleTimeString([], timeOptions)}`;
         };
 
         // Add table row with correct column order and matching input fields
