@@ -21,9 +21,13 @@ function loadDataFromLocalStorage() {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             
-            // Format time as HH:MM AM/PM
-            const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-            const time = date.toLocaleTimeString([], timeOptions);
+            // Manually format time as HH:MM AM/PM
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert 0 to 12
+            const time = `${hours}:${minutes} ${ampm}`;
             
             return `${day}/${month}/${year}<br>${time}`;
         };
