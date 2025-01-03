@@ -478,3 +478,12 @@ table td input:not([type="hidden"]):not(#categoryFilter) {
     border-radius: 10px;
     font-size: 15px;
 }
+
+.clear-button {
+    background: #dc3545;  /* Red color for warning */
+    flex: 1;
+}
+
+.clear-button:hover {
+    background: #c82333;  /* Darker red on hover */
+}

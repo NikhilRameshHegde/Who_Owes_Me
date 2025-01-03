@@ -457,3 +457,20 @@ function loadCategories() {
         datalist.appendChild(option);
     });
 }
+
+function clearAllEntries() {
+    // Check if there are any entries to clear
+    const data = JSON.parse(localStorage.getItem('moneyData')) || [];
+    if (data.length === 0) {
+        alert('No entries to clear!');
+        return;
+    }
+
+    // Ask for confirmation before clearing
+    if (confirm('Are you sure you want to clear all entries? This cannot be undone!')) {
+        // Clear the data
+        localStorage.setItem('moneyData', JSON.stringify([]));
+        loadDataFromLocalStorage();
+        alert('All entries have been cleared.');
+    }
+}
