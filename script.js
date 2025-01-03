@@ -16,14 +16,16 @@ function loadDataFromLocalStorage() {
         const createdDate = new Date(entry.createdOn || entry.date);
         const updatedDate = new Date(entry.date);
         const dateTimeFormat = (date) => {
+            // Manually format date as DD/MM/YYYY
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            // Format time as HH:MM AM/PM
             const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-            // Format date as DD/MM/YYYY
-            const dateStr = date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-            return `${dateStr}<br>${date.toLocaleTimeString([], timeOptions)}`;
+            const time = date.toLocaleTimeString([], timeOptions);
+            
+            return `${day}/${month}/${year}<br>${time}`;
         };
 
         // Add table row with correct column order and matching input fields
